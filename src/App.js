@@ -48,17 +48,24 @@ const Notification = ({ message, type, onClose }) => (
 );
 
 export default function App() {
-  const [recipients, setRecipients] = useState([{ name: "Asha", email: "ash48297@gmail.com" }]);
+  const [recipients, setRecipients] = useState([
+    { name: "Asha", email: "ash48297@gmail.com" },
+  ]);
   const [subject, setSubject] = useState("Hello {{name}} — quick note");
-  const [body, setBody] = useState("Hi {{name}},\n\nThis is a test email sent in one click.\n\nRegards,\nAsha");
+  const [body, setBody] = useState(
+    "Hi {{name}},\n\nThis is a test email sent in one click.\n\nRegards,\nAsha"
+  );
   const [fromEmail, setFromEmail] = useState("you@example.com");
   const [fromName, setFromName] = useState("Asha Mol");
   const [sending, setSending] = useState(false);
   const [concurrency, setConcurrency] = useState(5);
+
+  // New States
   const [imageType, setImageType] = useState("url");
   const [imageURL, setImageURL] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [attachmentFile, setAttachmentFile] = useState(null);
+
   const [notification, setNotification] = useState(null);
   const [previewOpen, setPreviewOpen] = useState(false);
 
@@ -72,23 +79,38 @@ export default function App() {
       formData.append("body", body);
       formData.append("recipients", JSON.stringify(recipients));
       formData.append("concurrency", concurrency);
-      formData.append("imageType", imageType);
-      if (imageType === "url") formData.append("imagePath", imageURL);
-      else if (imageType === "local" && imageFile) formData.append("file", imageFile);
-      if (attachmentFile) formData.append("file", attachmentFile);
 
-      const resp = await fetch("https://mail-app-h27m.onrender.com/send", { method: "POST", body: formData });
+      // Header image
+      formData.append("imageType", imageType);
+      if (imageType === "url" && imageURL) {
+        formData.append("imagePath", imageURL);
+      } else if (imageType === "local" && imageFile) {
+        formData.append("headerImage", imageFile);
+      }
+
+      // Attachment
+      if (attachmentFile) {
+        formData.append("attachment", attachmentFile);
+      }
+
+      const resp = await fetch(
+        "https://mail-app-h27m.onrender.com/send",
+        { method: "POST", body: formData }
+      );
       const data = await resp.json();
 
-      setNotification(data.ok
-        ? { type: "success", message: "Emails sent successfully!" }
-        : { type: "error", message: data.error || "Failed to send emails!" }
+      setNotification(
+        data.ok
+          ? { type: "success", message: "Emails sent successfully!" }
+          : { type: "error", message: data.error || "Failed to send emails!" }
       );
       setTimeout(() => setNotification(null), 3000);
     } catch (err) {
       setNotification({ type: "error", message: err.message });
       setTimeout(() => setNotification(null), 3000);
-    } finally { setSending(false); }
+    } finally {
+      setSending(false);
+    }
   }
 
   const renderBodyPreview = body.replace(/{{name}}/g, "John Doe");
@@ -139,7 +161,9 @@ export default function App() {
 
       {/* Top-right Send & Preview */}
       <div className="top-right-buttons">
-        <button className="preview-btn" onClick={()=>setPreviewOpen(true)}>Preview</button>
+        <button className="preview-btn" onClick={() => setPreviewOpen(true)}>
+          Preview
+        </button>
         <button className="send-btn" onClick={handleSend} disabled={sending}>
           {sending ? "Sending…" : `Send to ${recipients.length} recipients`}
         </button>
@@ -148,59 +172,166 @@ export default function App() {
       <div className="grid">
         {/* Recipients card */}
         <div className="card">
-          <label><b>Recipients</b> — format: <code>Name,email</code></label>
+          <label>
+            <b>Recipients</b> — format: <code>Name,email</code>
+          </label>
           <table>
-            <thead><tr><th>Name</th><th>Email</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+              </tr>
+            </thead>
             <tbody>
-              {recipients.map((r,i)=>(
+              {recipients.map((r, i) => (
                 <tr key={i}>
-                  <td><input value={r.name} onChange={(e)=>{const c=[...recipients];c[i].name=e.target.value;setRecipients(c);}}/></td>
-                  <td><input value={r.email} onChange={(e)=>{const c=[...recipients];c[i].email=e.target.value;setRecipients(c);}}/></td>
-                  <td><button className="remove-btn" onClick={()=>setRecipients(recipients.filter((_,idx)=>idx!==i))}>✕</button></td>
+                  <td>
+                    <input
+                      value={r.name}
+                      onChange={(e) => {
+                        const c = [...recipients];
+                        c[i].name = e.target.value;
+                        setRecipients(c);
+                      }}
+                    />
+                  </td>
+                  <td>
+                    <input
+                      value={r.email}
+                      onChange={(e) => {
+                        const c = [...recipients];
+                        c[i].email = e.target.value;
+                        setRecipients(c);
+                      }}
+                    />
+                  </td>
+                  <td>
+                    <button
+                      className="remove-btn"
+                      onClick={() =>
+                        setRecipients(recipients.filter((_, idx) => idx !== i))
+                      }
+                    >
+                      ✕
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <button className="add-btn" onClick={()=>setRecipients([...recipients,{name:"",email:""}])}>➕ Add Row</button>
+          <button
+            className="add-btn"
+            onClick={() =>
+              setRecipients([...recipients, { name: "", email: "" }])
+            }
+          >
+            ➕ Add Row
+          </button>
         </div>
 
         {/* Email content card */}
         <div className="card">
           <label>From Name</label>
-          <input value={fromName} onChange={(e)=>setFromName(e.target.value)}/>
+          <input
+            value={fromName}
+            onChange={(e) => setFromName(e.target.value)}
+          />
           <label>From Email</label>
-          <input value={fromEmail} onChange={(e)=>setFromEmail(e.target.value)}/>
+          <input
+            value={fromEmail}
+            onChange={(e) => setFromEmail(e.target.value)}
+          />
           <label>Subject</label>
-          <input value={subject} onChange={(e)=>setSubject(e.target.value)}/>
+          <input
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+          />
           <label>Body</label>
-          <textarea rows={8} value={body} onChange={(e)=>setBody(e.target.value)}/>
+          <textarea
+            rows={8}
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+          />
+
+          {/* Header Image */}
           <label>Header Image (Optional)</label>
-          <select value={imageType} onChange={(e)=>setImageType(e.target.value)}>
+          <select
+            value={imageType}
+            onChange={(e) => setImageType(e.target.value)}
+          >
             <option value="url">URL</option>
             <option value="local">Local Upload</option>
           </select>
-          {imageType==="url" ? <input type="text" placeholder="Image URL" value={imageURL} onChange={(e)=>setImageURL(e.target.value)}/> : <input type="file" accept="image/*" onChange={(e)=>setImageFile(e.target.files[0])}/>}
-          <label>Optional Attachment</label>
-          <input type="file" onChange={(e)=>setAttachmentFile(e.target.files[0])}/>
+          {imageType === "url" ? (
+            <input
+              type="text"
+              placeholder="Image URL"
+              value={imageURL}
+              onChange={(e) => setImageURL(e.target.value)}
+            />
+          ) : (
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setImageFile(e.target.files[0])}
+            />
+          )}
+
+          {/* Attachment */}
+          <label>Attachment (Optional)</label>
+          <input
+            type="file"
+            onChange={(e) => setAttachmentFile(e.target.files[0])}
+          />
+
           <label>Concurrency</label>
-          <input type="number" min={1} value={concurrency} onChange={(e)=>setConcurrency(Number(e.target.value))}/>
+          <input
+            type="number"
+            min={1}
+            value={concurrency}
+            onChange={(e) => setConcurrency(Number(e.target.value))}
+          />
         </div>
       </div>
 
       {/* Preview Modal */}
       {previewOpen && (
-        <div className="modal" onClick={()=>setPreviewOpen(false)}>
-          <div className="modal-content" onClick={e=>e.stopPropagation()}>
-            <button className="close-btn" onClick={()=>setPreviewOpen(false)}>Close ✕</button>
-            {imageURL && <img src={imageURL} alt="Header"/>}
+        <div className="modal" onClick={() => setPreviewOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="close-btn"
+              onClick={() => setPreviewOpen(false)}
+            >
+              Close ✕
+            </button>
+            {/* Show header image */}
+            {imageType === "url" && imageURL && (
+              <img src={imageURL} alt="Header" />
+            )}
+            {imageType === "local" && imageFile && (
+              <img src={URL.createObjectURL(imageFile)} alt="Header" />
+            )}
             <h4>{renderSubjectPreview}</h4>
             <p>{renderBodyPreview}</p>
-            <p><b>From:</b> {fromName} &lt;{fromEmail}&gt;</p>
+            <p>
+              <b>From:</b> {fromName} &lt;{fromEmail}&gt;
+            </p>
+            {attachmentFile && (
+              <p>
+                📎 <b>Attachment:</b> {attachmentFile.name}
+              </p>
+            )}
           </div>
         </div>
       )}
 
-      {notification && <Notification message={notification.message} type={notification.type} onClose={()=>setNotification(null)}/>}
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
     </div>
   );
 }
