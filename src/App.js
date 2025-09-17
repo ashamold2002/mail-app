@@ -131,8 +131,8 @@ export default function App() {
         .card { background: #fff; border-radius: 20px; padding: 30px; box-shadow: 4px 4px 12px rgba(0,0,0,0.1), -4px -4px 12px rgba(0,0,0,0.05); transition:0.3s; max-height:600px; overflow-y:auto; }
         .card:hover { box-shadow: inset 2px 2px 8px rgba(0,0,0,0.05), inset -2px -2px 8px rgba(0,0,0,0.02); }
 
-        table { width:100%; border-collapse:collapse; margin-top:15px; }
-        th, td { padding:12px; text-align:left; font-size:14px; font-family:'Roboto', sans-serif; }
+        table { width:100%; border-collapse:collapse; margin-top:15px;}
+        th, td { padding:12px; text-align:center; font-size:14px; font-family:'Roboto', sans-serif;padding-left:20px }
         th { background:#ecf0f1; color:#2c3e50; font-weight:600; border-radius:8px 8px 0 0; }
         tr:hover { background:#f1f1f1; }
 
