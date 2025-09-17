@@ -81,17 +81,21 @@ export default function App() {
       formData.append("concurrency", concurrency);
 
       // Header image
-      formData.append("imageType", imageType);
-      if (imageType === "url" && imageURL) {
-        formData.append("imagePath", imageURL);
-      } else if (imageType === "local" && imageFile) {
-        formData.append("headerImage", imageFile);
-      }
+formData.append("imageType", imageType);
+if (imageType === "url" && imageURL) {
+  formData.append("imagePath", imageURL);
+} else if (imageType === "local" && imageFile) {
+  // backend expects "header"
+  formData.append("header", imageFile);
+}
 
-      // Attachment
-      if (attachmentFile) {
-        formData.append("attachment", attachmentFile);
-      }
+// Attachment(s)
+if (attachmentFile) {
+  // backend expects "files"
+  formData.append("files", attachmentFile);
+}
+
+      
 
       const resp = await fetch(
         "https://mail-app-h27m.onrender.com/send",
